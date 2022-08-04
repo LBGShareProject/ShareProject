@@ -5,21 +5,25 @@
 由咸鱼的flutter_boost就是针对Native与Flutter混合开发推出的一套解决方案。
 
 今天主要分享的内容包含:
-1、FlutterBoos3.0如何解决混合栈问题
-2、FlutterBoos3.0t单引擎如何复用
-3、FlutterBoost3.0如何实现生命周期的精准通知以及Flutter侧如何实现
+1、FlutterBoos3.0如何解决混合栈问题。
+2、FlutterBoos3.0t单引擎如何复用。
+3、FlutterBoost3.0如何实现生命周期的精准通知以及Flutter侧如何实现。
 4、FlutterBoost3.0常用路由demo
-5、结合FlutterBoost3.0，如何与现有路由进行结合
-6、结合项目现有痛点进行解决
+5、结合FlutterBoost3.0，如何与现有路由进行结合。
+6、结合项目现有痛点进行解决。
 
 先看一张图片，有一个整体的思路，然后再跟着这个思路，看下面的细节
+
 ![FlutterBoost架构](./source/FlutterBoost架构.jpeg)
 ![FlutterBoost功能流程图](./source/FlutterBoost功能流程图.png)
+
 ## FlutterBoost的接入使用
 ### Native侧
 1、新建一个Native项目
 file->new->new project，这里给Native项目命名为FlutterBoostTest
+
 ![native侧接入1](./source/native侧接入1.jpeg)
+
 2、新建一个flutter_module
 由于Android studio Bumblebee版本不支持通过file->new->new flutter_module，所以我们只能通过cmd命令来创建一个flutte_module。
 首先cd到Native项目所在的文件夹，然后执行下面的命令
@@ -27,7 +31,9 @@ file->new->new project，这里给Native项目命名为FlutterBoostTest
 flutter create -t module flutter_module
 ```
 这里需要注意的是，创建的flutter_module需要和native项目是同一目录层级的。
+
 ![native侧接入2](./source/native侧接入2.jpeg)
+
 3、Native引入Flutter依赖
 3.1在settings.gradle配置如下代码：
 ```
@@ -98,37 +104,55 @@ flutter_boost:
       url: 'https://github.com/alibaba/flutter_boost.git'
       ref: 'v3.0-release.2'
 ```
+
 ![flutter侧接入1](./source/flutter侧接入1.jpeg)
+
 以上，FlutterBoost的集成就全部结束了。
 ## FlutterBoost如何解决混合栈问题
 ### Native做了什么
 在我们通过Intent启动一个FlutterBoostActivity，执行FlutterBoostActivity的onResume生命周期方法的时候，
 onResume内部会调用一个FlutterBoost.instance().getPlugin().onContainerAppeared(this)方法
+
 ![混合栈native做了什么1](./source/混合栈native做了什么1.jpeg)
+
 在onContainerAppeared就可以看到我们最希望看到的路由操作，pushRoute，我们继续看pushRoute内部做了哪些操作。
+
 ![混合栈native做了什么2](./source/混合栈native做了什么2.jpeg)
+
 pushRoute内部处理了我们最早通过Intent传的一些参数，包含uniqueId、pageName、params，然后通过channel调用pushRoute方法。
+
 ![混合栈native做了什么3](./source/混合栈native做了什么3.jpeg)
+
 在channel调用的pushRoute内部，最终其实就是发送了一个携带params参数、name为dev.flutter.pigeon.FlutterRouterApi.pushRoute的channel到Flutter侧。
 ### Flutter做了什么
 在Flutter侧，我们Main.dart中的根节点build返回了一个FlutterBoostApp。
+
 ![混合栈flutter做了什么1](./source/混合栈flutter做了什么1.jpeg)
+
 FlutterBoostApp中主要做了3个处理：
 1.注册路由表
+
 ![混合栈flutter做了什么2](./source/混合栈flutter做了什么2.jpeg)
+
 2.注册channel
 在FlutterBoostApp中的initState初始化了BoostFlutterRouterApi，在BoostFlutterRouterApi中调用FlutterRouterApi.setup()方法，
 最重要的就是这个setup方法，在这个方法中我们会发现，FlutterBoost是在Flutter页面初始化的时候，通过setUp方法，注册了一系列的channel，
 其中包括路由channel、Flutter页面状态channel等等。
+
 ![混合栈flutter做了什么3](./source/混合栈flutter做了什么3.jpeg)
+
 3.push预处理
+
 ![混合栈flutter做了什么4](./source/混合栈flutter做了什么4.jpeg)
+
 我们一起来看下onPrePush，在onPrePush内，我们可以根据option.arguments获取push过来的参数，对参数做一些条件判断或者预处理等，
 也可以拦截push过来的参数，进行修改，然后再继续执行后续的push流程。
 ### 总结：
 总的来说，FlutterBoost3.0，无论是Native跳转Flutter、Flutter跳转Native、Flutter跳转Flutter，
 都是通过channel通信的方式，最终会回到我们Application初始化FLutterBoost的回调方法中。
+
 ![混合栈总结](./source/混合栈总结.jpeg)
+
 ## FlutterBoost单引擎如何复用
 ### FlutterBoost1.17.1
 ```
@@ -138,18 +162,26 @@ val intent = MerchantFlutterActivity.withNewEngine().url(url)
 ```
 以商家版目前使用的FlutterBoost1.17.1版本为例，旧版本的Native跳转Flutter路由为每次打开一个Flutter页面，
 都要创建一个新的Engine引擎，创建的api为MerchantFlutterActivity.withNewEngine()，withNewEngine这个静态方法里面返回了一个NewEngineIntentBuilder。
+
 ![单引擎复用1](./source/单引擎复用1.jpeg)
+
 在NewEngineIntentBuilder中配置Flutter的背景模式、url、params参数、上下文，最终通过build方法将params序列化并返回一个intent。
+
 ![单引擎复用2](./source/单引擎复用2.jpeg)
+
 ### FlutterBoost3.0
 我们在启动app的首先会执行我们的Application，在上文FlutterBoost的接入使用3-3.4中我们可以看到，
 在Application中会通过FlutterBoost.instance().setup()来初始化FlutterBoost的相关配置，这其中就包含了初始化Engine这一操作，
 具体是怎么做的，我们来一起看下setUp方法中的内容。
+
 ![单引擎复用3](./source/单引擎复用3.jpeg)
+
 setUp方法中，首先会通过getEngine()方法获取一个Engine，如果获取不到Engine，
 也就是Engine为null的情况，Flutter提供了一个Provider，我们首先会通过这个Provider获取Engine，如果没有获取到，
 那么就new 一个FlutterEngine，并且将这个Engine put到FlutterEngineCache中缓存起来。
+
 ![单引擎复用4](./source/单引擎复用4.jpeg)
+
 我们再来看一下getEngine中做了哪些处理，getEngine中的FlutterEngineCache会通过一个ENGINE_ID来获取一个Engine，这里的ENGINE_ID是一个静态常量，
 FlutterEngineCache内部维护了一个cachedEngines是一个Map<String, FlutterEngine>类型的数组，get和put方法通过ENGINE_ID来获取和存储Engine，
 那么这个ENGINE_ID是怎么来的呢。
@@ -164,12 +196,18 @@ Intent intent = new FlutterBoostActivity.CachedEngineIntentBuilder(FlutterBoostA
 ```
 在FlutterBoost3.0中，打开一个新的Flutter页面不再使用withNewEngine，而是使用的CachedEngineIntentBuilder，
 两者的区别是，CachedEngineIntentBuilder内部的build方法通过intent传了一个EngineId这个一个参数，并且增加了Flutter页面销毁时，缓存的Engine是否跟随着一起销毁。
+
 ![单引擎复用5](./source/单引擎复用5.jpeg)
+
 上面的build方法执行完成后，继续执行startActivityForResult方法，接着开始执行FlutterBoostActivity生命周期，FlutterBoostActivity继承FlutterActivity，
+
 ![单引擎复用6](./source/单引擎复用6.jpeg)
+
 在FlutterActivity的onCreate中，创建FlutterActivityAndFragmentDelegate实例，调用FlutterActivityAndFragmentDelegate中的onAttach方法，
 在onAttach方法中setupFlutterEngine，在setupFlutterEngine其实就是通过我们设置的cachedEngineId来复用Engine，这样，整套Engine的复用就实现了。
+
 ![单引擎复用7](./source/单引擎复用7.jpeg)
+
 ### Engine复用总结：
 在每次App启动，在Application中会通过setUp中的getEngine来获取Engine，如果获取不到Engine，也就是Engine为null的情况，Flutter就会new 一个FlutterEngine，
 并且将这个Engine put到FlutterEngineCache中缓存起来，key为ENGINE_ID，然后在我们启动一个Flutter页面时，
@@ -244,7 +282,9 @@ BoostNavigator.instance.push("native").then(
     }
 ```
 打印结果
+
 ![打印结果](./source/打印结果.jpeg)
+
 #### Flutter跳转Flutter并处理返回参数
 ```
 // 1. 打开一个Flutter页面，并处理返回结果
@@ -456,7 +496,9 @@ onPageHide对标AndroidonStop，iOS viewDidDisappear。
 1、一个由Native和Flutter组合成的Fragment页面，底部是原生的导航，页面的主体内容是Flutter。
 痛点：
 在Flutter侧弹出一个弹窗，弹窗的半透明遮罩，只能遮住Flutter部分的容器，底部Native控件不会被遮住。
+
 ![项目痛点](./source/项目痛点.jpeg)
+
 解决：三步走
 第一步：由Flutter侧push一个带容器的Flutter页面的路由（这里起名openDialog）
 ```
@@ -464,7 +506,9 @@ BoostNavigator.instance.push("openDialog", withContainer: true);
 ```
 第二步：因为FlutterBoost3.0现有的所有路由，最终都会回到Application中，所以我们可以在Application中做一下拦截，
 拦截到openDialog这个路由后，启动我们单独的DialogActivity，并且给这个DialogActivity设置一个透明主题。
+
 ![痛点解决](./source/痛点解决.jpeg)
+
 ```
 public class DialogActivity extends FlutterBoostActivity {
     @Override
@@ -525,7 +569,9 @@ Timer timer;
 ```
 至此，以上的流程就解决了这个Flutter侧弹窗遮罩遮不到Native控件的痛点。
 效果：
+
 ![痛点解决效果](./source/痛点解决效果.jpeg)
+
 这里需要注意，关闭弹窗的时候需要pop两次
 ```
 await BoostNavigator.instance.pop();
