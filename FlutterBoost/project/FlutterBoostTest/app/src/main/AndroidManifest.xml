@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.flutterboosttest">
+
+    <application
+        android:name="MyApplication"
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.FlutterBoostTest">
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:theme="@style/Theme.FlutterBoostTest.NoActionBar">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name="com.idlefish.flutterboost.containers.FlutterBoostActivity"
+            android:theme="@style/Theme.AppCompat"
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|layoutDirection|fontScale|screenLayout|density"
+            android:hardwareAccelerated="true"
+            android:windowSoftInputMode="adjustResize" >
+
+        </activity>
+        <meta-data android:name="flutterEmbedding"
+            android:value="2">
+        </meta-data>
+
+        <activity android:name=".TargetActivity">
+
+        </activity>
+
+        <activity
+            android:name=".TabMainActivity"
+            android:theme="@style/Theme.AppCompat"
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|layoutDirection|fontScale|screenLayout|density"
+            android:hardwareAccelerated="true"
+            android:windowSoftInputMode="adjustResize" >
+            <meta-data android:name="io.flutter.embedding.android.SplashScreenDrawable" android:resource="@drawable/launch_background"/>
+
+        </activity>
+
+        <activity
+            android:name=".FlutterFragmentPageActivity"
+            android:theme="@style/Theme.AppCompat"
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|layoutDirection|fontScale|screenLayout|density"
+            android:hardwareAccelerated="true"
+            android:windowSoftInputMode="adjustResize">
+            <meta-data android:name="io.flutter.embedding.android.SplashScreenDrawable" android:resource="@drawable/launch_background"/>
+
+        </activity>
+
+        <activity
+            android:name=".NativePageActivity"
+            android:theme="@style/Theme.AppCompat"
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|layoutDirection|fontScale|screenLayout|density"
+            android:windowSoftInputMode="adjustResize"/>
+
+        <activity
+            android:name=".TransparencyPageActivity"
+            android:theme="@style/TranTheme.Translucente"
+            android:configChanges="screenSize|smallestScreenSize|orientation|keyboardHidden"
+            android:windowSoftInputMode="adjustResize">
+        </activity>
+
+<!--        <activity-->
+<!--            android:name=".PerfTestActivity"-->
+<!--            android:theme="@style/Theme.AppCompat"-->
+<!--            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|layoutDirection|fontScale|screenLayout|density"-->
+<!--            android:hardwareAccelerated="true"-->
+<!--            android:windowSoftInputMode="adjustResize" >-->
+<!--            <meta-data android:name="io.flutter.embedding.android.SplashScreenDrawable" android:resource="@drawable/launch_background"/>-->
+<!--            <intent-filter>-->
+<!--                <action android:name="android.intent.action.VIEW"/>-->
+<!--                <category android:name="android.intent.category.DEFAULT"/>-->
+<!--                <data android:scheme="http"/>-->
+<!--            </intent-filter>-->
+<!--        </activity>-->
+
+        <activity android:name=".DialogActivity"
+            android:theme="@style/TranTheme.Translucente"/>
+    </application>
+
+</manifest>
