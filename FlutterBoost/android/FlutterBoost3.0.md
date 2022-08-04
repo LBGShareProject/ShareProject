@@ -11,6 +11,7 @@
 4、FlutterBoost3.0常用路由demo
 5、结合FlutterBoost3.0，如何与现有路由进行结合
 6、结合项目现有痛点进行解决
+
 先看一张图片，有一个整体的思路，然后再跟着这个思路，看下面的细节
 ![FlutterBoost架构](./source/FlutterBoost架构.jpeg)
 ![FlutterBoost功能流程图](./source/FlutterBoost功能流程图.png)
